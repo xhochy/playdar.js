@@ -1,26 +1,26 @@
 Playdar.Client = function (listeners) {
     Playdar.client = this;
-    
+
     this.auth_token = false;
     this.authPopup = null;
-    
+
     this.listeners = {};
     this.resultsCallbacks = {};
-    
+
     this.resolveQids = [];
     this.lastQid = "";
     this.pollCounts = {};
-    
+
     /**
      * A query resolution queue consumed by processResolutionQueue, which is called
      * each time a final_answer is received from the daemon.
     **/
     this.initialiseResolve();
-    
+
     // Setup listeners
     this.register_listeners(Playdar.DefaultListeners);
     this.register_listeners(listeners);
-    
+
     this.uuid = Playdar.Util.generate_uuid();
 };
 Playdar.Client.prototype = {
@@ -45,16 +45,16 @@ Playdar.Client.prototype = {
             this.register_listener('onResults', handler);
         }
     },
-    
+
     // INIT / STAT / AUTH
-    
+
     go: function () {
         if (!this.is_authed()) {
             this.auth_token = Playdar.Util.getCookie(Playdar.AUTH_COOKIE_NAME);
         }
         this.stat();
     },
-    
+
     stat: function (postAuth) {
         this.statResponse = null;
         if (!postAuth) {
@@ -81,23 +81,14 @@ Playdar.Client.prototype = {
             Playdar.statusBar.handleStat(response);
         }
         this.listeners.onStat(response);
-        
+
         if (response.authenticated) {
-            // Setup scrobbling if we haven't already, if it's enabled globally
-            // and if the daemon has it enabled
-            if (!Playdar.scrobbler && Playdar.USE_SCROBBLER && response.capabilities.audioscrobbler) {
-                new Playdar.Scrobbler();
-            }
             this.listeners.onAuth();
         } else if (this.is_authed()) {
             this.clearAuth();
         }
     },
     clearAuth: function () {
-        if (Playdar.scrobbler) {
-            // Stop scrobbling
-            Playdar.scrobbler.stop(true);
-        }
         // Revoke auth at the server
         Playdar.Util.loadJs(this.getRevokeUrl());
         // Clear auth token
@@ -171,7 +162,7 @@ Playdar.Client.prototype = {
             }
         }
     },
-    
+
     auth_callback: function (token) {
         Playdar.Util.setCookie(Playdar.AUTH_COOKIE_NAME, token, 365);
         if (this.authPopup && !this.authPopup.closed) {
@@ -187,14 +178,14 @@ Playdar.Client.prototype = {
             this.auth_callback(input.value);
         }
     },
-    
+
     /**
      * Playdar.client.autodetect([callback][, context])
      * - callback (Function): Function to be run for each track to be resolved
      *      Will be passed the track object. If this returns a qid, it will be
      *      passed on to the resolve call.
      * - context (DOMElement): A DOM node to use to scope the selector
-     * 
+     *
      * Attempts to detect any mentions of a track on a page or within a node
      * and resolves them.
     **/
@@ -222,7 +213,7 @@ Playdar.Client.prototype = {
             console.warn(error);
         }
     },
-    
+
     // CONTENT RESOLUTION
     /**
      * Playdar.client.resolve(artist, track[, album][, qid][, results])
@@ -231,9 +222,9 @@ Playdar.Client.prototype = {
      * - album (String): Track album. This will only be used for sorting results
      * - qid (UUID): ID to use for this query
      * - results (Array): An array of result objects to seed the response set with
-     * 
+     *
      * Queries the Playdar API by first calling the `resolve` method then initiates polling of `get_results`
-    **/    
+    **/
     resolve: function (artist, track, album, qid, results) {
         if (!this.is_authed()) {
             return false;
@@ -254,7 +245,7 @@ Playdar.Client.prototype = {
         if (Playdar.statusBar) {
             Playdar.statusBar.incrementRequests();
         }
-        
+
         this.resolutionQueue.push(query);
         this.processResolutionQueue();
         return qid;
@@ -298,7 +289,7 @@ Playdar.Client.prototype = {
     },
     recheck_results: function (qid) {
         var query = {
-            qid: qid 
+            qid: qid
         };
         this.resolutionsInProgress.queries[qid] = query;
         this.resolutionsInProgress.count++;
@@ -312,7 +303,7 @@ Playdar.Client.prototype = {
             this.getResults(query.qid);
         }
     },
-    
+
     // poll results for a query id
     getResults: function (qid) {
         // Check resolving hasn't been cancelled
@@ -417,9 +408,9 @@ Playdar.Client.prototype = {
             this.getResults(this.lastQid);
         }
     },
-    
+
     // UTILITY FUNCTIONS
-    
+
     getBaseUrl: function (path, query_params) {
         var url = "http://" + Playdar.SERVER_ROOT + ":" + Playdar.SERVER_PORT;
         if (path) {
@@ -430,13 +421,13 @@ Playdar.Client.prototype = {
         }
         return url;
     },
-    
+
     /**
      * Playdar.client.getUrl(method[, query_params][, callback]) -> String | Array
      * - method (String): Method to call on the Playdar API
      * - query_params (Object): An optional object that defines extra query params
      * - callback (String): JSONP Callback name. Must be a member of Playdar.client
-     * 
+     *
      * Builds an API URL from a method name, jsonp parameter and an optional object
      * of extra query parameters.
      * If USE_JSONP is false, returns an array of the URL and the callback function
@@ -462,14 +453,14 @@ Playdar.Client.prototype = {
             return [this.getBaseUrl("/api/", query_params), onLoad];
         }
     },
-    
+
     addAuthToken: function (query_params) {
         if (this.is_authed()) {
             query_params.auth = this.auth_token;
         }
         return query_params;
     },
-    
+
     // turn a source id into a stream url
     get_stream_url: function (sid) {
         return this.getBaseUrl("/sid/" + sid);

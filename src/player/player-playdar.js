@@ -1,6 +1,6 @@
 Playdar.PlaydarPlayer = function () {
     Playdar.player = this;
-    
+
     this.sounds = {};
     this.nowplayingid = null;
 };
@@ -44,7 +44,7 @@ Playdar.PlaydarPlayer.prototype = {
         if (this.sounds[result.sid]) {
             return false;
         }
-        
+
         // Merge in defaults and register callbacks
         callbacks = callbacks || {};
         var callbackOptions = [callbacks];
@@ -52,10 +52,6 @@ Playdar.PlaydarPlayer.prototype = {
         // Wrap sound progress callbacks with status bar
         if (Playdar.statusBar) {
             callbackOptions.push(Playdar.statusBar.getSoundCallbacks(result));
-        }
-        // Wrap sound lifecycle callbacks in scrobbling calls
-        if (Playdar.scrobbler) {
-            callbackOptions.push(Playdar.scrobbler.getSoundCallbacks(result));
         }
         Playdar.Util.extendObject(callbacks, Playdar.Util.mergeCallbackOptions(callbackOptions));
         var player = this;
@@ -129,16 +125,11 @@ Playdar.PlaydarPlayer.prototype = {
         if (this.nowplayingid != sid) {
             this.stop_current();
         }
-        
+
         sound.togglePause();
         return sound;
     },
     stop_current: function (hard) {
-        if (hard) {
-            if (Playdar.scrobbler) {
-                Playdar.scrobbler.stop();
-            }
-        }
         // Update status bar
         if (Playdar.statusBar) {
             Playdar.statusBar.stopCurrent();
@@ -180,7 +171,7 @@ Playdar.PlaydarPlayer.prototype = {
         Playdar.client.addAuthToken(query_params);
         return Playdar.client.getBaseUrl("/player", query_params);
     },
-    
+
     play: function (sid) {
         Playdar.Util.loadJs(this.getUrl('play', {
             sid: sid,

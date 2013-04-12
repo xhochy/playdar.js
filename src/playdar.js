@@ -21,9 +21,8 @@ Playdar = {
     MAX_POLLS: 4,
     MAX_CONCURRENT_RESOLUTIONS: 5,
     USE_STATUS_BAR: true,
-    USE_SCROBBLER: true,
     USE_JSONP: true,
-    
+
     client: null,
     statusBar: null,
     player: null,
@@ -53,9 +52,6 @@ Playdar = {
         if (Playdar.player) {
             // Stop the music
             Playdar.player.stop_current(true);
-        } else if (Playdar.scrobbler) {
-            // Stop scrobbling
-            Playdar.scrobbler.stop(true);
         }
     }
 };
@@ -72,7 +68,6 @@ Playdar.DefaultListeners = {
 };
 
 //= require "client.js"
-//= require "scrobbler.js"
 //= require "player.js"
 //= require "statusbar.js"
 //= require "util.js"

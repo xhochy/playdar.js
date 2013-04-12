@@ -1,9 +1,9 @@
 Playdar.SM2Player = function (soundmanager, swfUrl, onready, options) {
     Playdar.player = this;
-    
+
     this.results = {};
     this.nowplayingid = null;
-    
+
     // soundmanager can be a jsUrl or the soundManager global
     if (typeof soundmanager == 'string') {
         SM2_DEFER = true;
@@ -84,7 +84,7 @@ Playdar.SM2Player.prototype = {
         }
         // Register result
         this.results[result.sid] = result;
-        
+
         var url = options.external ? result.url : Playdar.client.get_stream_url(result.sid);
         var isMp3 = url.match(this.soundmanager.filePatterns.flash8);
         var isNetStream = url.match(this.soundmanager.netStreamPattern);
@@ -96,7 +96,7 @@ Playdar.SM2Player.prototype = {
             // Trust file extension before mime types
             isMovieStar = (isNetStream ? true : false) || Playdar.SM2Player.MIMETYPES[result.mimetype];
         }
-        
+
         var sound_options = Playdar.Util.extendObject({
             id: 's_' + result.sid,
             url: url,
@@ -104,15 +104,11 @@ Playdar.SM2Player.prototype = {
             useVideo: true,
             bufferTime: 2
         }, options);
-        
+
         var callbackOptions = [options];
         // Wrap sound progress callbacks with status bar
         if (Playdar.statusBar) {
             callbackOptions.push(Playdar.statusBar.getSoundCallbacks(result));
-        }
-        // Wrap sound lifecycle callbacks in scrobbling calls
-        if (Playdar.scrobbler) {
-            callbackOptions.push(Playdar.scrobbler.getSoundCallbacks(result));
         }
         Playdar.Util.extendObject(sound_options, Playdar.Util.mergeCallbackOptions(callbackOptions));
         try {
@@ -134,16 +130,11 @@ Playdar.SM2Player.prototype = {
                 }
             }
         }
-        
+
         sound.togglePause();
         return sound;
     },
     stop_current: function (hard) {
-        if (hard) {
-            if (Playdar.scrobbler) {
-                Playdar.scrobbler.stop();
-            }
-        }
         var nowPlaying = this.getNowPlaying();
         if (nowPlaying) {
             if (nowPlaying.playState == 1) {
